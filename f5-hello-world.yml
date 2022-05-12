@@ -1,0 +1,65 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: my-applications
+  labels:
+    name: lab
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: deployment-app
+  name: deployment-app
+  namespace: my-applications
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: deployment-app
+  template:
+    metadata:
+      labels:
+        app: deployment-app
+    spec:
+      containers:
+      - env:
+        - name: service_name
+          value: f5-hello-world
+        image: f5devcentral/f5-hello-world:latest
+        imagePullPolicy: Always
+        name: f5-hello-world
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: svc-app
+  labels:
+    app: svc-app
+  namespace: my-applications
+spec:
+  ports:
+  - name: deployment-app-port-1
+    port: 8081
+    nodePort: 30081
+    protocol: TCP
+    targetPort: 8080
+  - name: deployment-app-port-2
+    port: 8082
+    nodePort: 30082
+    protocol: TCP
+    targetPort: 8080
+  - name: deployment-app-port-3
+    port: 8083
+    nodePort: 30083
+    protocol: TCP
+    targetPort: 8080
+  selector:
+      app: deployment-app
+  type: NodePort
